@@ -8,7 +8,6 @@
 
 **Secure API Key Management with Enterprise-Grade Encryption**
 
-```mermaid
 flowchart TD
     A[Website] -->|1. Request API Key| B[APIKEY Connect]
     B -->|2. Check Permissions| C{Permission?}
@@ -22,8 +21,10 @@ flowchart TD
     style B fill:#4285F4,stroke:#0D47A1,color:white
     style C fill:#FBBC05,stroke:#EE8100,color:black
     style D fill:#34A853,stroke:#0D652D,color:white
+    style E fill:#DDDDDD,stroke:#9E9E9E,color:black
+    style F fill:#DDDDDD,stroke:#9E9E9E,color:black
     style G fill:#EA4335,stroke:#C62828,color:white
-```
+    style A fill:#DDDDDD,stroke:#9E9E9E,color:black
 
 </div>
 
