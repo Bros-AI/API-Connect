@@ -7,7 +7,7 @@
 ![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)
 
 **Secure API Key Management with Enterprise-Grade Encryption**
-```
+```mermaid
 flowchart TD
     A[Website] -->|1. Request API Key| B[APIKEY Connect]
     B -->|2. Check Permissions| C{Permission?}
