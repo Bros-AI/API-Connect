@@ -7,7 +7,7 @@
 ![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)
 
 **Secure API Key Management with Enterprise-Grade Encryption**
-
+```
 flowchart TD
     A[Website] -->|1. Request API Key| B[APIKEY Connect]
     B -->|2. Check Permissions| C{Permission?}
@@ -25,7 +25,7 @@ flowchart TD
     style F fill:#DDDDDD,stroke:#9E9E9E,color:black
     style G fill:#EA4335,stroke:#C62828,color:white
     style A fill:#DDDDDD,stroke:#9E9E9E,color:black
-
+```
 </div>
 
 ## 📋 Table of Contents
