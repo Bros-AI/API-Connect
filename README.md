@@ -305,6 +305,6 @@ We provide a simple JavaScript API for requesting keys. See our [Developer Docum
 
 <div align="center">
 <p>Secure your API keys today!</p>
-<p><a href="https://chrome.google.com/webstore/detail/apikey-connect/your-extension-id" class="download-button">Download APIKEY Connect</a></p>
+<p><a href="[https://chrome.google.com/webstore/detail/apikey-connect/your-extension-id](https://chromewebstore.google.com/detail/apikeyconnect/edkgcdpbaggofodchjfkfiblhohmkbac)" class="download-button">Download APIKEY Connect</a></p>
 <p>Made with ❤️ by Gauthier BROS</p>
 </div>
