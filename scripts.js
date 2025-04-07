@@ -507,7 +507,7 @@ function initDeveloperPage() {
       border-radius: 8px;
       font-weight: 500;
       cursor: pointer;
-      transition: background-color 0.2s, transform 0.1s;
+      transition: all 0.3s ease;
       margin: 20px 0;
       position: relative;
     }
@@ -543,8 +543,8 @@ function initDeveloperPage() {
     .apikey-connect-btn.loading::after {
       content: '';
       position: absolute;
-      width: 12px;
-      height: 12px;
+      width: 16px;
+      height: 16px;
       border: 2px solid white;
       border-radius: 50%;
       border-top-color: transparent;
@@ -558,6 +558,10 @@ function initDeveloperPage() {
     
     .apikey-connect-btn.error {
       background-color: #ef4444;
+    }
+    
+    .apikey-connect-btn.install-required {
+      background-color: #f59e0b;
     }
     
     @keyframes spin {
@@ -762,10 +766,32 @@ function initDeveloperPage() {
               window.open('https://chromewebstore.google.com/detail/apikey-connect/edkgcdpbaggofodchjfkfiblhohmkbac', '_blank');
             }
             
-            <span class="comment">// Reset button</span>
+            <span class="comment">// Reset button, but with install required styling</span>
             apiKeyProtectBtn.classList.remove('loading');
-            apiKeyProtectBtn.textContent = '${buttonText}';
-            apiKeyProtectBtn.disabled = false;
+            apiKeyProtectBtn.classList.add('install-required'); 
+            apiKeyProtectBtn.textContent = 'Install Extension First';
+            
+            resultContainer.innerHTML = \`
+              <div style="padding: 20px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <div style="font-size: 48px; margin-bottom: 16px;">🔑</div>
+                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #1e293b;">APIKeyConnect Extension Required</h3>
+                <p style="margin-bottom: 20px; color: #475569;">To use this feature, you need to install the APIKeyConnect extension.</p>
+                <a href="https://chromewebstore.google.com/detail/apikey-connect/edkgcdpbaggofodchjfkfiblhohmkbac" 
+                   target="_blank" 
+                   style="display: inline-block; padding: 12px 24px; background-color: #4f46e5; color: white; border-radius: 6px; text-decoration: none; font-weight: 500; transition: all 0.2s ease;">
+                  Install Extension
+                </a>
+                <p style="margin-top: 16px; font-size: 14px; color: #64748b;">After installing, please refresh this page to continue.</p>
+              </div>
+            \`;
+            resultContainer.style.display = 'block';
+            
+            <span class="comment">// Reset button after 5 seconds</span>
+            setTimeout(() => {
+              apiKeyProtectBtn.classList.remove('install-required');
+              apiKeyProtectBtn.disabled = false;
+              apiKeyProtectBtn.textContent = '${buttonText}';
+            }, 5000);
             return;
           }
           
@@ -793,12 +819,15 @@ function initDeveloperPage() {
             
             <span class="comment">// Show success in results container</span>
             resultContainer.innerHTML = \`
-              &lt;div class="result-container success"&gt;
-                &lt;div class="result-header"&gt;API Key Retrieved Successfully&lt;/div&gt;
-                &lt;div class="result-body"&gt;
-                  API key successfully retrieved. Key starts with: \${apiKey.substring(0, 3)}...
-                &lt;/div&gt;
-              &lt;/div&gt;
+              <div style="padding: 16px; background-color: #d1fae5; border-radius: 8px; color: #065f46; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="font-size: 18px;">✅</div>
+                  <div>
+                    <strong style="font-weight: 600;">Success!</strong> 
+                    <span>API key received (\${apiKey.substring(0, 3)}...)</span>
+                  </div>
+                </div>
+              </div>
             \`;
             resultContainer.style.display = 'block';
             
@@ -808,22 +837,23 @@ function initDeveloperPage() {
               
               <span class="comment">// Show API response</span>
               resultContainer.innerHTML += \`
-                &lt;div class="result-container success" style="margin-top: 15px;"&gt;
-                  &lt;div class="result-header"&gt;API Response&lt;/div&gt;
-                  &lt;div class="result-body"&gt;
-                    &lt;pre&gt;\${JSON.stringify(apiResponse, null, 2)}&lt;/pre&gt;
-                  &lt;/div&gt;
-                &lt;/div&gt;
+                <div style="margin-top: 15px; padding: 16px; background-color: #d1fae5; border-radius: 8px; color: #065f46; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+                  <div style="font-weight: 600; margin-bottom: 8px;">API Response:</div>
+                  <pre style="background-color: #f8fafc; padding: 10px; border-radius: 4px; color: #1e293b;">\${JSON.stringify(apiResponse, null, 2)}</pre>
+                </div>
               \`;
             } catch (apiError) {
               <span class="comment">// Show API error</span>
               resultContainer.innerHTML += \`
-                &lt;div class="result-container error" style="margin-top: 15px;"&gt;
-                  &lt;div class="result-header"&gt;API Request Failed&lt;/div&gt;
-                  &lt;div class="result-body"&gt;
-                    \${apiError.message || 'Unknown error'}
-                  &lt;/div&gt;
-                &lt;/div&gt;
+                <div style="margin-top: 15px; padding: 16px; background-color: #fee2e2; border-radius: 8px; color: #b91c1c; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="font-size: 18px;">❌</div>
+                    <div>
+                      <strong style="font-weight: 600;">API Request Failed:</strong> 
+                      <span>\${apiError.message || 'Unknown error'}</span>
+                    </div>
+                  </div>
+                </div>
               \`;
             }
             
@@ -849,12 +879,15 @@ function initDeveloperPage() {
           
           <span class="comment">// Show error in results container</span>
           resultContainer.innerHTML = \`
-            &lt;div class="result-container error"&gt;
-              &lt;div class="result-header"&gt;Error&lt;/div&gt;
-              &lt;div class="result-body"&gt;
-                \${error.message || 'Unknown error occurred'}
-              &lt;/div&gt;
-            &lt;/div&gt;
+            <div style="padding: 16px; background-color: #fee2e2; border-radius: 8px; color: #b91c1c; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="font-size: 18px;">❌</div>
+                <div>
+                  <strong style="font-weight: 600;">Error:</strong> 
+                  <span>\${error.message || 'Unknown error occurred'}</span>
+                </div>
+              </div>
+            </div>
           \`;
           resultContainer.style.display = 'block';
           
@@ -904,6 +937,7 @@ function initDeveloperPage() {
       /* Button States */
       .apikey-connect-btn {
         position: relative;
+        transition: all 0.3s ease;
       }
       
       .apikey-connect-btn.loading {
@@ -914,8 +948,8 @@ function initDeveloperPage() {
       .apikey-connect-btn.loading::after {
         content: '';
         position: absolute;
-        width: 12px;
-        height: 12px;
+        width: 16px;
+        height: 16px;
         border: 2px solid white;
         border-radius: 50%;
         border-top-color: transparent;
@@ -931,8 +965,18 @@ function initDeveloperPage() {
         background-color: #ef4444;
       }
       
+      .apikey-connect-btn.install-required {
+        background-color: #f59e0b;
+      }
+      
       @keyframes spin {
         to { transform: rotate(360deg); }
+      }
+      
+      /* Enhanced Preview Result */
+      #previewResult {
+        margin-top: 20px;
+        transition: all 0.3s ease;
       }
     `;
     document.head.appendChild(style);
@@ -1008,10 +1052,17 @@ document.addEventListener('DOMContentLoaded', function() {
           window.open('https://chromewebstore.google.com/detail/apikey-connect/edkgcdpbaggofodchjfkfiblhohmkbac', '_blank');
         }
         
-        <span class="comment">// Reset button</span>
+        <span class="comment">// Reset button with install required styling</span>
         apiKeyProtectBtn.classList.remove('loading');
-        apiKeyProtectBtn.textContent = '${buttonText}';
-        apiKeyProtectBtn.disabled = false;
+        apiKeyProtectBtn.classList.add('install-required');
+        apiKeyProtectBtn.textContent = 'Install Extension First';
+        
+        <span class="comment">// Reset button after 5 seconds</span>
+        setTimeout(() => {
+          apiKeyProtectBtn.classList.remove('install-required');
+          apiKeyProtectBtn.disabled = false;
+          apiKeyProtectBtn.textContent = '${buttonText}';
+        }, 5000);
         return;
       }
       
@@ -1111,7 +1162,7 @@ document.addEventListener('DOMContentLoaded', function() {
   font-weight: 500;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: all 0.3s ease;
   position: relative;
 }
 
@@ -1146,8 +1197,8 @@ document.addEventListener('DOMContentLoaded', function() {
 .apikey-connect-btn.loading::after {
   content: '';
   position: absolute;
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   border: 2px solid white;
   border-radius: 50%;
   border-top-color: transparent;
@@ -1161,6 +1212,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .apikey-connect-btn.error {
   background-color: #ef4444;
+}
+
+.apikey-connect-btn.install-required {
+  background-color: #f59e0b;
 }
 
 @keyframes spin {
@@ -1183,10 +1238,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewButton = document.getElementById('previewButton');
     if (!previewButton) return;
     
-    // Store any existing click handler
-    const originalClickHandler = previewButton.onclick;
-    
-    // Replace with enhanced handler
+    // Replace the existing click handler
     previewButton.onclick = async function() {
       const serviceId = document.getElementById('serviceId').value;
       const keyName = document.getElementById('keyName').value;
@@ -1214,26 +1266,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const isInstalled = await isExtensionInstalled();
         
         if (!isInstalled) {
-          // Show installation prompt instead of error
+          // We're showing a download prompt directly in the preview area
           if (previewResult) {
             previewResult.innerHTML = `
-              <div style="padding: 16px; background-color: #fff9db; border: 1px solid #ffd43b; border-radius: 8px; text-align: center;">
-                <p style="margin-bottom: 12px; font-weight: 500;">The APIKeyConnect extension is required but not installed.</p>
+              <div style="padding: 20px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <div style="font-size: 48px; margin-bottom: 16px;">🔑</div>
+                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #1e293b;">APIKeyConnect Extension Required</h3>
+                <p style="margin-bottom: 20px; color: #475569;">To use this feature, you need to install the APIKeyConnect extension.</p>
                 <a href="https://chromewebstore.google.com/detail/apikey-connect/edkgcdpbaggofodchjfkfiblhohmkbac" 
                    target="_blank" 
-                   style="display: inline-block; padding: 8px 16px; background-color: #4f46e5; color: white; border-radius: 6px; text-decoration: none; font-weight: 500;">
+                   style="display: inline-block; padding: 12px 24px; background-color: #4f46e5; color: white; border-radius: 6px; text-decoration: none; font-weight: 500; transition: all 0.2s ease;">
                   Install Extension
                 </a>
-                <p style="margin-top: 12px; font-size: 14px; color: #555;">After installing, please refresh this page.</p>
+                <p style="margin-top: 16px; font-size: 14px; color: #64748b;">After installing, please refresh this page to continue.</p>
               </div>
             `;
             previewResult.style.display = 'block';
           }
           
-          // Reset button
+          // Reset button with install messaging
           this.classList.remove('loading');
-          this.disabled = false;
-          this.textContent = originalText;
+          this.classList.add('install-required');
+          this.textContent = 'Install Extension First';
+          
+          // Reset button to original state after 5 seconds
+          setTimeout(() => {
+            this.classList.remove('install-required');
+            this.disabled = false;
+            this.textContent = originalText;
+          }, 5000);
           return;
         }
         
@@ -1258,8 +1319,14 @@ document.addEventListener('DOMContentLoaded', function() {
           
           if (previewResult) {
             previewResult.innerHTML = `
-              <div style="padding: 12px; background-color: #d1fae5; border-radius: 6px; color: #065f46; font-size: 14px;">
-                <strong>Success!</strong> API key received (${response.key.substring(0, 3)}...)
+              <div style="padding: 16px; background-color: #d1fae5; border-radius: 8px; color: #065f46; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="font-size: 18px;">✅</div>
+                  <div>
+                    <strong style="font-weight: 600;">Success!</strong> 
+                    <span>API key received (${response.key.substring(0, 3)}...)</span>
+                  </div>
+                </div>
               </div>
             `;
             previewResult.style.display = 'block';
@@ -1285,8 +1352,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (previewResult) {
           previewResult.innerHTML = `
-            <div style="padding: 12px; background-color: #fee2e2; border-radius: 6px; color: #b91c1c; font-size: 14px;">
-              <strong>Error:</strong> ${error.message || 'Unknown error occurred'}
+            <div style="padding: 16px; background-color: #fee2e2; border-radius: 8px; color: #b91c1c; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="font-size: 18px;">❌</div>
+                <div>
+                  <strong style="font-weight: 600;">Error:</strong> 
+                  <span>${error.message || 'Unknown error occurred'}</span>
+                </div>
+              </div>
             </div>
           `;
           previewResult.style.display = 'block';
