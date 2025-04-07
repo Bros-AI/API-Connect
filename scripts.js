@@ -300,8 +300,13 @@ function initDeveloperPage() {
     
     try {
       if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) {
-        statusDot.className = 'status-dot error';
-        statusText.textContent = 'Extension not available (browser not compatible)';
+        if (navigator.userAgent.indexOf("Chrome") !== -1) {
+          statusDot.className = 'status-dot error';
+          statusText.textContent = 'APIKEY Connect extension is not installed';
+        } else {
+          statusDot.className = 'status-dot error';
+          statusText.textContent = 'Extension not available (browser not compatible)';
+        }
         installPrompt.style.display = 'block';
         return false;
       }
@@ -675,19 +680,19 @@ function initDeveloperPage() {
   
   &lt;<span class="key">script</span>&gt;
     document.addEventListener('DOMContentLoaded', function() {
-      <span class="comment">// Elements</span>
+      // Elements
       const apiKeyProtectBtn = document.getElementById('apiKeyProtectBtn');
       const apiKeyError = document.getElementById('apiKeyError');
       const resultContainer = document.getElementById('resultContainer');
       const extensionStatus = document.getElementById('extensionStatus');
       
-      <span class="comment">// Constants</span>
+      // Constants
       const EXTENSION_ID = 'edkgcdpbaggofodchjfkfiblhohmkbac';
       
-      <span class="comment">// Check if extension is installed</span>
+      // Check if extension is installed
       checkExtension();
       
-      <span class="comment">// Functions</span>
+      // Functions
       function showError(message) {
         if (apiKeyError) {
           apiKeyError.textContent = message;
@@ -706,9 +711,15 @@ function initDeveloperPage() {
           const statusText = extensionStatus.querySelector('span');
           const installLink = extensionStatus.querySelector('.install-link');
           
+          // Patched detection logic:
           if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) {
-            statusDot.className = 'status-dot error';
-            statusText.textContent = 'Extension not available (browser not compatible)';
+            if (navigator.userAgent.indexOf("Chrome") !== -1) {
+              statusDot.className = 'status-dot error';
+              statusText.textContent = 'APIKEY Connect extension is not installed';
+            } else {
+              statusDot.className = 'status-dot error';
+              statusText.textContent = 'Extension not available (browser not compatible)';
+            }
             installLink.style.display = 'inline';
             return false;
           }
@@ -719,7 +730,7 @@ function initDeveloperPage() {
             chrome.runtime.sendMessage(EXTENSION_ID, { type: 'ping' }, (response) => {
               clearTimeout(timeout);
               
-              <span class="comment">// Check for error</span>
+              // Check for error
               const error = chrome.runtime.lastError;
               if (error) {
                 resolve(null);
@@ -747,31 +758,31 @@ function initDeveloperPage() {
         }
       }
       
-      <span class="comment">// Button click handler</span>
+      // Button click handler
       apiKeyProtectBtn.addEventListener('click', async function() {
-        <span class="comment">// Clear previous results</span>
+        // Clear previous results
         resultContainer.style.display = 'none';
         apiKeyError.style.display = 'none';
       
         try {
-          <span class="comment">// Show loading state</span>
+          // Show loading state
           apiKeyProtectBtn.disabled = true;
           apiKeyProtectBtn.classList.add('loading');
           apiKeyProtectBtn.textContent = 'Checking...';
           
-          <span class="comment">// Check if extension is installed</span>
+          // Check if extension is installed
           const isInstalled = await checkExtension();
           if (!isInstalled) {
             if (confirm('The APIKEY Connect extension is required but not installed. Would you like to install it now?')) {
               window.open('https://chromewebstore.google.com/detail/apikey-connect/edkgcdpbaggofodchjfkfiblhohmkbac', '_blank');
             }
             
-            <span class="comment">// Reset button, but with install required styling</span>
+            // Reset button with install required styling
             apiKeyProtectBtn.classList.remove('loading');
             apiKeyProtectBtn.classList.add('install-required'); 
             apiKeyProtectBtn.textContent = 'Install Extension First';
             
-            resultContainer.innerHTML = \`
+            resultContainer.innerHTML = `
               <div style="padding: 20px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                 <div style="font-size: 48px; margin-bottom: 16px;">🔑</div>
                 <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px; color: #1e293b;">APIKeyConnect Extension Required</h3>
@@ -783,10 +794,10 @@ function initDeveloperPage() {
                 </a>
                 <p style="margin-top: 16px; font-size: 14px; color: #64748b;">After installing, please refresh this page to continue.</p>
               </div>
-            \`;
+            `;
             resultContainer.style.display = 'block';
             
-            <span class="comment">// Reset button after 5 seconds</span>
+            // Reset button after 5 seconds
             setTimeout(() => {
               apiKeyProtectBtn.classList.remove('install-required');
               apiKeyProtectBtn.disabled = false;
@@ -795,135 +806,113 @@ function initDeveloperPage() {
             return;
           }
           
-          <span class="comment">// Extension is installed, proceed with request</span>
+          // Extension is installed, proceed with request
           apiKeyProtectBtn.textContent = 'Requesting API Key...';
           
-          <span class="comment">// Request the API key from the extension</span>
+          // Request the API key from the extension
           const response = await chrome.runtime.sendMessage(
             EXTENSION_ID,
             {
               type: "requestKey",
-              serviceId: "${serviceId}",
-              keyName: "${keyName}"
+              serviceId: "openai",
+              keyName: "Default OpenAI Key"
             }
           );
           
           if (response && response.success) {
-            <span class="comment">// Success! You now have the API key</span>
+            // Success! You now have the API key
             const apiKey = response.key;
             
-            <span class="comment">// Show success state</span>
-            apiKeyProtectBtn.classList.remove('loading');
-            apiKeyProtectBtn.classList.add('success');
-            apiKeyProtectBtn.textContent = 'Key Received!';
-            
-            <span class="comment">// Show success in results container</span>
-            resultContainer.innerHTML = \`
-              <div style="padding: 16px; background-color: #d1fae5; border-radius: 8px; color: #065f46; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <div style="font-size: 18px;">✅</div>
-                  <div>
-                    <strong style="font-weight: 600;">Success!</strong> 
-                    <span>API key received (\${apiKey.substring(0, 3)}...)</span>
-                  </div>
+            // Show success state
+            resultContainer.innerHTML = `
+              <div class="result-container success">
+                <div class="result-header">API Key Retrieved Successfully</div>
+                <div class="result-body">
+                  API key successfully retrieved. Key starts with: ${apiKey.substring(0, 3)}...
                 </div>
               </div>
-            \`;
+            `;
             resultContainer.style.display = 'block';
             
-            <span class="comment">// Use the API key for a real API call</span>
+            // Use the API key for a real API call
             try {
-              const apiResponse = await callApiExample(apiKey);
+              const apiResponse = await callOpenAI(apiKey);
               
-              <span class="comment">// Show API response</span>
-              resultContainer.innerHTML += \`
-                <div style="margin-top: 15px; padding: 16px; background-color: #d1fae5; border-radius: 8px; color: #065f46; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-                  <div style="font-weight: 600; margin-bottom: 8px;">API Response:</div>
-                  <pre style="background-color: #f8fafc; padding: 10px; border-radius: 4px; color: #1e293b;">\${JSON.stringify(apiResponse, null, 2)}</pre>
-                </div>
-              \`;
-            } catch (apiError) {
-              <span class="comment">// Show API error</span>
-              resultContainer.innerHTML += \`
-                <div style="margin-top: 15px; padding: 16px; background-color: #fee2e2; border-radius: 8px; color: #b91c1c; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-                  <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="font-size: 18px;">❌</div>
-                    <div>
-                      <strong style="font-weight: 600;">API Request Failed:</strong> 
-                      <span>\${apiError.message || 'Unknown error'}</span>
-                    </div>
+              // Show API response
+              resultContainer.innerHTML += `
+                <div class="result-container success" style="margin-top: 15px;">
+                  <div class="result-header">API Response</div>
+                  <div class="result-body">
+                    <pre>${JSON.stringify(apiResponse, null, 2)}</pre>
                   </div>
                 </div>
-              \`;
+              `;
+            } catch (apiError) {
+              // Show API error
+              resultContainer.innerHTML += `
+                <div class="result-container error" style="margin-top: 15px;">
+                  <div class="result-header">API Request Failed</div>
+                  <div class="result-body">
+                    ${apiError.message || 'Unknown error'}
+                  </div>
+                </div>
+              `;
             }
-            
-            <span class="comment">// Reset button after 2 seconds</span>
-            setTimeout(() => {
-              apiKeyProtectBtn.classList.remove('success');
-              apiKeyProtectBtn.disabled = false;
-              apiKeyProtectBtn.textContent = '${buttonText}';
-            }, 2000);
           } else {
-            <span class="comment">// Handle error or rejection</span>
+            // Handle error or rejection
             throw new Error(response?.error || 'Failed to get API key');
           }
         } catch (error) {
           console.error('Error requesting API key:', error);
-          
-          <span class="comment">// Show error state</span>
-          apiKeyProtectBtn.classList.remove('loading');
-          apiKeyProtectBtn.classList.add('error');
-          apiKeyProtectBtn.textContent = 'Error!';
-          
           showError(error.message || 'Error requesting API key');
           
-          <span class="comment">// Show error in results container</span>
-          resultContainer.innerHTML = \`
-            <div style="padding: 16px; background-color: #fee2e2; border-radius: 8px; color: #b91c1c; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="font-size: 18px;">❌</div>
-                <div>
-                  <strong style="font-weight: 600;">Error:</strong> 
-                  <span>\${error.message || 'Unknown error occurred'}</span>
-                </div>
+          // Show error in results container
+          resultContainer.innerHTML = `
+            <div class="result-container error">
+              <div class="result-header">Error</div>
+              <div class="result-body">
+                ${error.message || 'Unknown error occurred'}
               </div>
             </div>
-          \`;
+          `;
           resultContainer.style.display = 'block';
-          
-          <span class="comment">// Reset button after 2 seconds</span>
-          setTimeout(() => {
-            apiKeyProtectBtn.classList.remove('error');
-            apiKeyProtectBtn.disabled = false;
-            apiKeyProtectBtn.textContent = '${buttonText}';
-          }, 2000);
+        } finally {
+          // Reset button state
+          apiKeyProtectBtn.disabled = false;
+          apiKeyProtectBtn.textContent = 'Use My OpenAI API Key';
         }
       });
       
-      <span class="comment">// Example API call function</span>
-      async function callApiExample(apiKey) {
-        <span class="comment">// This is just an example - replace with the actual API call for your service</span>
-        const response = await fetch('https://api.${serviceId}.com/v1/endpoint', {
+      // Function to call OpenAI API
+      async function callOpenAI(apiKey) {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': \`Bearer \${apiKey}\`
+            'Authorization': `Bearer ${apiKey}`
           },
           body: JSON.stringify({
-            <span class="comment">// Your request payload here</span>
+            model: 'gpt-3.5-turbo',
+            messages: [
+              { role: 'system', content: 'You are a helpful assistant.' },
+              { role: 'user', content: 'Say hello and explain what API keys are in one sentence.' }
+            ],
+            max_tokens: 150
           })
         });
         
         if (!response.ok) {
-          throw new Error(\`API request failed: \${response.status} \${response.statusText}\`);
+          const errorText = await response.text();
+          throw new Error(`API request failed: ${response.status} ${response.statusText}\n${errorText}`);
         }
         
         return await response.json();
       }
     });
-  &lt;/<span class="key">script</span>&gt;
-&lt;/<span class="key">body</span>&gt;
-&lt;/<span class="key">html</span>&gt;`;
+  </script>
+&lt;/body&gt;
+&lt;/html&gt;
+`;
   }
 
   // Function to add missing button styles
@@ -1141,7 +1130,8 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(data => console.log('API response:', data))
     .catch(error => console.error('API request failed:', error));
   }
-});`;
+});
+`;
   }
 
   // Update CSS code snippet with improved button states
@@ -1266,7 +1256,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const isInstalled = await isExtensionInstalled();
         
         if (!isInstalled) {
-          // We're showing a download prompt directly in the preview area
+          // Show a download prompt directly in the preview area
           if (previewResult) {
             previewResult.innerHTML = `
               <div style="padding: 20px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
@@ -1298,10 +1288,9 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
         
-        // If we get here, extension is installed, so update button text
+        // If extension is installed, update button text and request API key
         this.textContent = 'Requesting API Key...';
         
-        // Request the API key from the extension
         const response = await chrome.runtime.sendMessage(
           EXTENSION_ID,
           {
@@ -1332,18 +1321,15 @@ document.addEventListener('DOMContentLoaded', function() {
             previewResult.style.display = 'block';
           }
           
-          // Reset after 2 seconds
           setTimeout(() => {
             this.classList.remove('success');
             this.disabled = false;
             this.textContent = originalText;
           }, 2000);
         } else {
-          // Error
           throw new Error(response?.error || 'Failed to get API key');
         }
       } catch (error) {
-        // Handle error
         console.error('Preview button error:', error);
         
         this.classList.remove('loading');
@@ -1365,7 +1351,6 @@ document.addEventListener('DOMContentLoaded', function() {
           previewResult.style.display = 'block';
         }
         
-        // Reset after 2 seconds
         setTimeout(() => {
           this.classList.remove('error');
           this.disabled = false;
