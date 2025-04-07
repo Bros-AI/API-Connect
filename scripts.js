@@ -110,7 +110,7 @@ function initHomePage() {
     // Now check if the extension API is available
     if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.sendMessage) {
       showExtensionRequired("Extension Access Unavailable", 
-        "Extension features are not available in your current browser. Please use Chrome, Edge, or another Chromium-based browser.");
+        "To use this feature, you need to install the APIKeyConnect extension.");
       return;
     }
     
