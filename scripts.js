@@ -1,6 +1,7 @@
 // ========================================================================
-// APIKEY Connect - Production Integration Script (v1.3.0)
+// APIKEY Connect - Production Integration Script (v1.3.2)
 // No demo mode - Real extension required for all functionality
+// Fixed Chrome detection and extension messaging
 // ========================================================================
 
 // Common functionality for both pages
@@ -93,10 +94,10 @@ function initHomePage() {
 
   // Function to retrieve API key from extension - requires extension to be installed
   function retrieveAPIKeyFromExtension() {
-    // Check if Chrome API is available
-    if (typeof chrome === "undefined" || !chrome.runtime || typeof chrome.runtime.sendMessage !== "function") {
-      showExtensionRequired("Browser Not Compatible", 
-        "This feature requires Chrome, Edge, or another Chromium-based browser with extension support. Please switch browsers to use this feature.");
+    // First check if we're in a secure context (needed for extension API)
+    if (!window.isSecureContext) {
+      showExtensionRequired("Secure Connection Required", 
+        "Extension access requires a secure (HTTPS) connection. Please access this site via HTTPS.");
       return;
     }
     
@@ -106,13 +107,33 @@ function initHomePage() {
     `;
     document.getElementById("connectKeyBtn").disabled = true;
     
-    // First check if extension is available with a ping
+    // Now check if the extension API is available
+    if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.sendMessage) {
+      showExtensionRequired("Extension Access Unavailable", 
+        "Extension features are not available in your current browser. Please use Chrome, Edge, or another Chromium-based browser.");
+      return;
+    }
+    
+    // Try to contact the extension
     try {
+      const pingTimeout = setTimeout(() => {
+        // If ping times out, the extension is not installed
+        showExtensionRequired();
+      }, 1000);
+      
       chrome.runtime.sendMessage(EXTENSION_ID, { type: "ping" }, function(pingResponse) {
+        clearTimeout(pingTimeout);
+        
         // Check for Chrome runtime error
         if (chrome.runtime.lastError) {
-          console.log("Extension check error:", chrome.runtime.lastError.message);
-          showExtensionRequired();
+          // Specific error for when extension not installed
+          if (chrome.runtime.lastError.message.includes("not installed")) {
+            showExtensionRequired();
+          } else {
+            // Other runtime errors
+            console.log("Extension check error:", chrome.runtime.lastError.message);
+            showExtensionError("Error communicating with extension: " + chrome.runtime.lastError.message);
+          }
           return;
         }
         
@@ -123,32 +144,41 @@ function initHomePage() {
           return;
         }
         
-        // Extension is installed, try to get a key
-        // Try retrieving without a key name first (default key)
-        chrome.runtime.sendMessage(EXTENSION_ID, {
-          type: "requestKey",
-          serviceId: "openai"
-        }, function(response) {
-          // Check for Chrome runtime error
-          if (chrome.runtime.lastError) {
-            console.log("Key request error:", chrome.runtime.lastError.message);
-            showExtensionError("Error communicating with extension");
-            return;
-          }
-          
-          if (response && response.success) {
-            // Success with default key
-            handleSuccessfulConnection(response.key);
-          } else {
-            // Try with common key names
-            tryNextKeyName(0);
-          }
-        });
+        // Extension is installed and responded successfully, try to get a key
+        requestAPIKey();
       });
     } catch (error) {
       // If any error occurs, show extension required
       console.error("Extension access error:", error);
       showExtensionRequired();
+    }
+  }
+  
+  // Function to request API key once extension is confirmed available
+  function requestAPIKey() {
+    try {
+      // Try retrieving without a key name first (default key)
+      chrome.runtime.sendMessage(EXTENSION_ID, {
+        type: "requestKey",
+        serviceId: "openai"
+      }, function(response) {
+        // Check for Chrome runtime error
+        if (chrome.runtime.lastError) {
+          console.log("Key request error:", chrome.runtime.lastError.message);
+          showExtensionError("Error communicating with extension");
+          return;
+        }
+        
+        if (response && response.success) {
+          // Success with default key
+          handleSuccessfulConnection(response.key);
+        } else {
+          // Try with common key names
+          tryNextKeyName(0);
+        }
+      });
+    } catch (error) {
+      showExtensionError("Error requesting API key: " + error.message);
     }
   }
   
@@ -184,6 +214,8 @@ function initHomePage() {
       <br><small>Please try refreshing the page or reinstalling the extension.</small>
     `;
     document.getElementById("connectKeyBtn").disabled = false;
+    document.getElementById("connectKeyBtn").textContent = "Try Again";
+    document.getElementById("connectKeyBtn").style.backgroundColor = "";
   }
   
   // Array of common key names to try
@@ -381,10 +413,18 @@ function initDeveloperPage() {
     const statusText = statusIndicator.querySelector('span');
     const installPrompt = statusEl.querySelector('.install-prompt');
     
+    // First check for secure context
+    if (!window.isSecureContext) {
+      statusDot.className = 'status-dot error';
+      statusText.textContent = 'Extension access requires HTTPS';
+      installPrompt.style.display = 'block';
+      return;
+    }
+    
     // Check if Chrome API is available at all
     if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) {
       statusDot.className = 'status-dot error';
-      statusText.textContent = 'Extension not available (browser not compatible)';
+      statusText.textContent = 'Extension access not available';
       installPrompt.style.display = 'block';
       return;
     }
